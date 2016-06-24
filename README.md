@@ -3,9 +3,8 @@
 A utility for creating new golang github repositories.
 
 This utility assumes
- * `$GOPATH` is set correctly and that it is part of the current path for the go package being added
- * `~/.github_token` contains a github application token that has the repository create permission
- * The current working directory is a golang package directory
+ * `$GOPATH` is part of the current directory
+ * `~/.github_token` contains a github app token that has repo create permissions
 
  Example Usage
 
@@ -15,9 +14,14 @@ This utility assumes
  tigwen
  ```
 
- * The github token is used to create a new repository at github.com/username/pkgname
- * A new git repo is initializes in the directory `$GOPATH/src/github.com/username/pkgname`
+What it does
+
+ * Aa new repository is created at github.com/username/pkgname
+ * A git repository is initialized in the directory `$GOPATH/src/github.com/username/pkgname`
  * The files `README.md`, `LICENSE`, and `.gitignore` are added and committed
  * The remote origin is set and the initial commit is pushed
+
+TODO:
+ * Make the LICENSE and .gitignore content configurable and not hardcoded in the go source
 
 
