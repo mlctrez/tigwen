@@ -115,7 +115,7 @@ func main() {
 	crtext := fmt.Sprintf("Copyright %v Matt Crawford", time.Now().Year())
 	ltext = strings.Replace(ltext, "@@COPY@@", crtext, 1)
 
-	err = ioutil.WriteFile(filepath.Join(repoPath, "LICENSE"), []byte(LICENSE), 0644)
+	err = ioutil.WriteFile(filepath.Join(repoPath, "LICENSE"), []byte(ltext), 0644)
 	checkErr(err)
 
 	err = ioutil.WriteFile(filepath.Join(repoPath, ".gitignore"), []byte(GITIGNORE), 0644)
