@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
@@ -69,6 +70,17 @@ func goPath() string {
 	return gopath
 }
 
+func generateReadme(gh, user, repo string) string {
+	buf := bytes.NewBuffer(nil)
+
+	buf.WriteString(fmt.Sprintf("# %s\n\n", repo))
+
+	pkg := fmt.Sprintf("%s/%s/%s", gh, user, repo)
+	buf.WriteString(fmt.Sprintf("[![Go Report Card](https://goreportcard.com/badge/%s)](https://goreportcard.com/report/%s)\n\n", pkg, pkg))
+
+	return string(buf.Bytes())
+}
+
 func main() {
 
 	dir, err := os.Getwd()
@@ -106,7 +118,7 @@ func main() {
 
 	gitCommand(repoPath, "init")
 
-	readmeFile := `Temp Readme file`
+	readmeFile := generateReadme("github.com", userName, repoName)
 
 	err = ioutil.WriteFile(filepath.Join(repoPath, "README.md"), []byte(readmeFile), 0644)
 	checkErr(err)
