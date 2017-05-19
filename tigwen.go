@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"os/user"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -62,12 +63,19 @@ func gitCommand(repoPath string, args ...string) (output string, err error) {
 }
 
 func goPath() string {
-	gopath, found := os.LookupEnv("GOPATH")
 
-	if !found {
-		checkErr(fmt.Errorf("GOPATH not set"))
+	gp := os.Getenv("GOPATH")
+	if gp == "" {
+		u, err := user.Current()
+		if err != nil {
+			checkErr(err)
+		}
+		gp = path.Join(u.HomeDir, "go")
+		if _, err := os.Stat(gp); err != nil {
+			checkErr(err)
+		}
 	}
-	return gopath
+	return gp
 }
 
 func generateReadme(gh, user, repo string) string {
