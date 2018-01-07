@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"context"
 )
 
 func checkErr(err error) {
@@ -113,7 +114,7 @@ func main() {
 	repo := &github.Repository{Name: &repoName}
 	repo.Name = &repoName
 
-	repository, response, err := client.Repositories.Create("", repo)
+	repository, response, err := client.Repositories.Create(context.Background(), "", repo)
 
 	_ = repository
 	_ = response
