@@ -3,7 +3,8 @@
 A utility for creating new golang github repositories.
 
 This utility assumes
-* `$GOPATH` is part of the current directory
+* `$GOPATH` is part of the current directory or some part of parent directory contains github.com
+    * this is used to determine the user and project in github
 * `~/.github_token` contains a github app token that has repo create permissions
 
 Example Usage

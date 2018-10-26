@@ -1,17 +1,22 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
-	"github.com/google/go-github/github"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
+
+	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
 )
 
 func checkErr(err error) {
@@ -61,15 +66,6 @@ func gitCommand(repoPath string, args ...string) (output string, err error) {
 	return output, err
 }
 
-func goPath() string {
-	gopath, found := os.LookupEnv("GOPATH")
-
-	if !found {
-		checkErr(fmt.Errorf("GOPATH not set"))
-	}
-	return gopath
-}
-
 func generateReadme(gh, user, repo string) string {
 	buf := bytes.NewBuffer(nil)
 
@@ -81,23 +77,54 @@ func generateReadme(gh, user, repo string) string {
 	return string(buf.Bytes())
 }
 
+func getUserAndRepo() (user, repo string, err error) {
+	if _, ferr := os.Stat("go.mod"); os.IsNotExist(ferr) {
+
+		var dir string
+		if dir, err = os.Getwd(); err != nil {
+			return
+		}
+
+		repo = filepath.Base(dir)
+		dir = filepath.Dir(dir)
+		user = filepath.Base(dir)
+		dir = filepath.Dir(dir)
+		if filepath.Base(dir) != "github.com" {
+			err = errors.New("grandparent of current directory is not github.com")
+		}
+		return
+	}
+	var file *os.File
+	file, err = os.Open("go.mod")
+	if err != nil {
+		return
+	}
+	scanner := bufio.NewScanner(file)
+	r := regexp.MustCompile(`module github.com/(\w*)/(\w*)`)
+	for scanner.Scan() {
+		submatch := r.FindStringSubmatch(scanner.Text())
+		if len(submatch) == 3 {
+			user = submatch[1]
+			repo = submatch[2]
+			break
+		}
+	}
+	err = scanner.Err()
+
+	if user == "" || repo == "" {
+		err = errors.New("unable to determine github user or repo: check go.mod file")
+	}
+
+	return
+}
+
 func main() {
 
-	dir, err := os.Getwd()
+	repoPath, err := os.Getwd()
 	checkErr(err)
 
-	gopath := goPath()
-
-	githubsrc := filepath.Join(gopath, "src", "github.com")
-
-	relpath := strings.Replace(dir, githubsrc, "", 1)[1:]
-
-	parts := strings.Split(relpath, "/")
-
-	fmt.Println(parts)
-
-	userName := parts[0]
-	repoName := parts[1]
+	userName, repoName, err := getUserAndRepo()
+	checkErr(err)
 
 	client, err := githubClient()
 	checkErr(err)
@@ -105,7 +132,7 @@ func main() {
 	repo := &github.Repository{Name: &repoName}
 	repo.Name = &repoName
 
-	repository, response, err := client.Repositories.Create("", repo)
+	repository, response, err := client.Repositories.Create(context.Background(), "", repo)
 
 	_ = repository
 	_ = response
@@ -113,8 +140,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	repoPath := filepath.Join(goPath(), "src", "github.com", userName, repoName)
 
 	gitCommand(repoPath, "init")
 
@@ -144,6 +169,7 @@ func main() {
 }
 
 const GITIGNORE = `.idea/
+dist/
 `
 
 const LICENSE = `
