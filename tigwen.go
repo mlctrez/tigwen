@@ -151,7 +151,11 @@ func main() {
 	_, err = worktree.Commit("initial commit", &git.CommitOptions{})
 	checkErr(err)
 
-	err = gitRepo.CreateBranch(&config.Branch{Name: "master"})
+	err = gitRepo.CreateBranch(&config.Branch{
+		Name:   "master",
+		Remote: "origin",
+		Merge:  "refs/heads/master",
+	})
 	checkErr(err)
 
 	_, err = gitRepo.CreateRemote(&config.RemoteConfig{
