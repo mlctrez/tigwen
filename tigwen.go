@@ -5,14 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
-	"github.com/google/go-github/v25/github"
-	"github.com/kevinburke/ssh_config"
-	"github.com/mitchellh/go-homedir"
-	"github.com/mlctrez/tigwen/internal/files"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
 	"os"
@@ -21,6 +13,15 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/google/go-github/v25/github"
+	"github.com/kevinburke/ssh_config"
+	"github.com/mitchellh/go-homedir"
+	"github.com/mlctrez/tigwen/internal/files"
+	"golang.org/x/oauth2"
 )
 
 func checkErr(err error) {
@@ -86,7 +87,7 @@ func getUserAndRepo() (user, repo string, err error) {
 		return
 	}
 	scanner := bufio.NewScanner(file)
-	r := regexp.MustCompile(`module github.com/(\w*)/(\w*)`)
+	r := regexp.MustCompile(`module github.com/(\w*)/(.*)`)
 	for scanner.Scan() {
 		match := r.FindStringSubmatch(scanner.Text())
 		if len(match) == 3 {
